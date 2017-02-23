@@ -1,7 +1,7 @@
 # Binary Heap
 Lightweight implementation of the binary-heap data-structure in C.
 
-Pure-macro implementation (very fast).
+Purely-macros implementation (very fast).
 
 # Highlights
 
