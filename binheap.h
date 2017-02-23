@@ -120,8 +120,8 @@ struct binheap_struct_name                                                  \
     ___new_cap *= (1 + h.growth_factor);                                    \
     ___new_cap /= (1 + h.growth_ratio);                                     \
     ___new_cap += h.growth_increment;                                       \
-    if ( BINHEAP_unlikely(___new_cap == h.capacity) ) ___new_cap++;         \
-    h.capacity = ___new_cap;                                                \
+    if ( BINHEAP_unlikely(___new_cap <= h.capacity) ) h.capacity++;         \
+    else h.capacity = ___new_cap;                                           \
     h.nodes = BINHEAP_realloc(h.nodes,                                      \
                               (1 + h.capacity) *                            \
                               BINHEAP_ELEM_SIZE(h));                        \
