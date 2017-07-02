@@ -17,23 +17,23 @@
 #define BINHEAP_assert          assert
 #define BINHEAP_likely(x)       __builtin_expect(!!(x), 1)
 #define BINHEAP_unlikely(x)     __builtin_expect(!!(x), 0)
-#define BINHEAP_inline			inline __attribute__((always_inline))
-#define BINHEAP_ENOMEM			ENOMEM
+#define BINHEAP_inline            inline __attribute__((always_inline))
+#define BINHEAP_ENOMEM            ENOMEM
 
 #include <binheap.h>
 
 struct int_elem
 {
-	int value;
-	struct binheap_entry as_minheap_entry;
+    int value;
+    struct binheap_entry as_minheap_entry;
 };
 
 static inline unsigned int
 minheap_int_cmp_ok(struct binheap_entry* parent, struct binheap_entry* child)
 {
-	struct int_elem *p, *c;
-	p = binheap_get_capsule(parent, struct int_elem, as_minheap_entry);
-	c = binheap_get_capsule(child, struct int_elem, as_minheap_entry);
+    struct int_elem *p, *c;
+    p = binheap_get_capsule(parent, struct int_elem, as_minheap_entry);
+    c = binheap_get_capsule(child, struct int_elem, as_minheap_entry);
     return (p->value <= c->value) ? 1 : 0;
 }
 
@@ -55,7 +55,7 @@ minheap_int_cmp_ok(struct binheap_entry* parent, struct binheap_entry* child)
 #define minheap_get_root(h) \
     binheap_get_capsule(binheap_get_root((h)), struct int_elem, as_minheap_entry)
 
-#define minheap_is_empty(h)		((h)->size == 0)
+#define minheap_is_empty(h)        ((h)->size == 0)
 
 /*
  *
@@ -76,7 +76,7 @@ struct int_elem test_values_sorted[] =
 
 static inline void test_binheap(void)
 {
-	struct int_elem tmp;
+    struct int_elem tmp;
     int i;
     const int count = sizeof(test_values) / sizeof(test_values[0]);
     const int initial_capacity = count;
