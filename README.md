@@ -109,7 +109,7 @@ In a nutshell you have to:
 
 * Binary-heap capacity never shrinks, only grows according to the growth formula.
 
-# Note about the .cproject, .project files;
+# Note about the .cproject, .project files:
 
-An Eclipse CDT C Makefile project has been added (files .project, .cproject).
-You need Eclipse CDT and make+gcc+gdb in PATH to import and run/debug it.
+* An Eclipse CDT C Makefile project has been added (files .project, .cproject).
+  You need Eclipse CDT and make+gcc+gdb in PATH to import and run/debug it.
