@@ -1,14 +1,14 @@
 # Binary Heap
 Lightweight implementation of the binary-heap data-structure in C.
 
-Purely-macros implementation (very fast).
+Function-inlining implementation (fast).
 
 # Highlights
 
 * Single header file (binheap.h) with no external dependencies
 * Clean linux-kernel coding-style
 * Can behave as both min-heap and max-heap
-* Generic (C++ template-like - see BINHEAP_TEMPLATE_INSTANTIATE)
+* Generic (just encapsulate a 'struct binheap_entry' in element type)
 * Customizable realloc behavior (capacity growth formula can be adjusted)
 * Operations: init, destroy, insert, delete, delete_root, get_root
 
@@ -18,12 +18,13 @@ Take a look at **binheap_test.c** for a concrete example.
 
 In a nutshell you have to:
 
-####1. Define needed macros and include the header file
+#### 1. Define needed macros and include the header file
 
   ```
   #include <stdlib.h>
   #include <string.h>
   #include <assert.h>
+  #include <errno.h>
 
   #define BINHEAP_malloc          malloc
   #define BINHEAP_free            free
@@ -32,74 +33,83 @@ In a nutshell you have to:
   #define BINHEAP_assert          assert
   #define BINHEAP_likely(x)       __builtin_expect(!!(x), 1)
   #define BINHEAP_unlikely(x)     __builtin_expect(!!(x), 0)
+  #define BINHEAP_inline          inline __attribute__((always_inline))
+  #define BINHEAP_ENOMEM          ENOMEM
 
   #include <binheap.h>
   ```
 
-####2. Instantiate the templates (C++-like) you want to instantiate by:
+#### 2. Create a type encapsulating a 'struct binheap_entry' and the data you want the heap-elements to hold
 
   ```
-  BINHEAP_TEMPLATE_INSTANTIATE(minheap_int, int);
-  typedef struct minheap_int minheap_int_t;
-  ```
-
-####3. Define the comparison-ok function that establishes when the order between a parent and a child is ok in the heap. In a min-heap, for example:
-
-  ```
-  static inline bool_t
-  minheap_int_cmp_ok_fn(int parent, int child)
+  struct int_elem
   {
-      return (parent <= child);
+      int value;
+      struct binheap_entry as_minheap_entry;
+  };
+  ```
+
+#### 3. Define the comparison-ok function that establishes when the order between a parent and a child is ok in the heap. In a min-heap, for example:
+
+  ```
+  static inline unsigned int
+  minheap_int_cmp_ok(struct binheap_entry* parent, struct binheap_entry* child)
+  {
+      struct int_elem *p, *c;
+      p = binheap_get_capsule(parent, struct int_elem, as_minheap_entry);
+      c = binheap_get_capsule(child, struct int_elem, as_minheap_entry);
+      return (p->value <= c->value) ? 1 : 0;
   }
   ```
 
-####4. Optionally define wrappers over provided operations:
+#### 4. Optionally define wrappers over provided operations (recommended):
 
   ```
-  #define minheap_init(h, cap, factor, ratio, increment) \
-      binheap_init((h), (cap), (factor), (ratio), (increment));
-
-  #define minheap_destroy(h) \
-      binheap_destroy((h))
-
-  #define minheap_insert(h, v) \
-      binheap_insert((h), (v), minheap_int_cmp_ok_fn);
-
-  #define minheap_delete(h, eptr) \
-      binheap_delete((h), (eptr), minheap_int_cmp_ok_fn);
-
-  #define minheap_delete_root(h) \
-      binheap_delete_root((h), minheap_int_cmp_ok_fn);
-
-  #define minheap_get_root(h) \
-      binheap_get_root((h))
+    #define minheap_init(h, cap, factor, ratio, increment) \
+        binheap_init((h), (cap), (factor), (ratio), (increment))
+    #define minheap_destroy(h) \
+        binheap_destroy((h))
+    #define minheap_insert(h, ie) \
+        binheap_insert((h), &(ie)->as_minheap_entry, minheap_int_cmp_ok)
+    #define minheap_delete(h, ie) \
+        binheap_delete((h), &(ie)->as_minheap_entry, minheap_int_cmp_ok)
+    #define minheap_delete_root(h) \
+        binheap_delete_root((h), minheap_int_cmp_ok)
+    #define minheap_get_root(h) \
+        binheap_get_capsule(binheap_get_root((h)), struct int_elem, as_minheap_entry)
+    #define minheap_is_empty(h)		((h)->size == 0)
   ```
 
-####5. And use it:
+#### 5. And use it:
 
   ```
-  minheap_int_t minheap_of_ints;
+  struct binheap minheap_of_ints;
 
   // To initialize:
-  minheap_init(minheap_of_ints, 10, 1, 0, 0); /* 1, 0, 0 -> capacity doubles (2x) on realloc */
+  minheap_init(&minheap_of_ints, initial_capacity, 1, 0, 0); /* 1, 0, 0 -> capacity doubles (2x) on realloc */
 
   // To insert an element:
-  int e = 7;
-  int* eptr = minheap_insert(minheap_of_ints, e); /* second param (e) must be lvalue */
+  struct int_elem e = { .value = 7 };
+  minheap_insert(&minheap_of_ints, &e);
 
   // To get the root element (minimum in a min-heap, maximum in a max-heap):
-  int* root = minheap_get_root(minheap_of_ints);
+  struct int_elem* root = minheap_get_root(&minheap_of_ints);
 
   // To delete an element:
-  minheap_delete(minheap_of_ints, eptr);
+  minheap_delete(&minheap_of_ints, &e);
 
   // To delete the root element:
-  minheap_delete_root(minheap_of_ints);
+  minheap_delete_root(&minheap_of_ints);
 
   // And finally, to destroy the binary-heap after you're done using it:
-  minheap_destroy(minheap_of_ints);
+  minheap_destroy(&minheap_of_ints);
   ```
 
 # Caveats:
 
 * Binary-heap capacity never shrinks, only grows according to the growth formula.
+
+# Note about the .cproject, .project files;
+
+An Eclipse CDT C Makefile project has been added (files .project, .cproject).
+You need Eclipse CDT and make+gcc+gdb in PATH to import and run/debug it.

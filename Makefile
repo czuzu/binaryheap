@@ -1,11 +1,9 @@
-all: build run
-
-build:
+all:
 	@echo
 	@echo \*** Compiling and linking test app ...
 	@echo
 	mkdir -p out/
-	gcc -I. binheap_test.c -o out/binheap_test.app
+	gcc -g -O0 -I. binheap_test.c -o out/binheap_test.app
 	chmod +x out/binheap_test.app
 
 run:
@@ -20,4 +18,4 @@ run:
 clean:
 	rm -rf out/
 
-.PHONY: all build run clean
+.PHONY: all run clean
