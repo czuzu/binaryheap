@@ -73,7 +73,7 @@ struct binheap_entry
 };
 
 typedef unsigned int (*binheap_cmp_ok_fn)(struct binheap_entry* p,
-										  struct binheap_entry* c);
+                                          struct binheap_entry* c);
 
 struct binheap
 {
