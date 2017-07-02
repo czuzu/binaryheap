@@ -17,8 +17,8 @@
 #define BINHEAP_assert          assert
 #define BINHEAP_likely(x)       __builtin_expect(!!(x), 1)
 #define BINHEAP_unlikely(x)     __builtin_expect(!!(x), 0)
-#define BINHEAP_inline            inline __attribute__((always_inline))
-#define BINHEAP_ENOMEM            ENOMEM
+#define BINHEAP_inline          inline __attribute__((always_inline))
+#define BINHEAP_ENOMEM          ENOMEM
 
 #include <binheap.h>
 
